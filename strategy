@@ -1,0 +1,80 @@
+//@version=5
+indicator(title = "Smoothed Heiken Ashi Candles", shorttitle="Smoothed Ha Candles", overlay=true)
+import TradingView/ta/5
+
+len=input(10)
+o=ta.ema(open,len)
+c=ta.ema(close,len)
+h=ta.ema(high,len)
+l=ta.ema(low,len)
+
+haclose = (o+h+l+c)/4 
+haopen=0.0 
+haopen := na(haopen[1]) ? (o + c)/2 : (haopen[1] + haclose[1]) / 2
+hahigh = math.max (h, math.max(haopen,haclose))
+halow = math.min (l, math.min(haopen,haclose))
+
+len2=input(10)
+o2=ta.ema(haopen, len2)
+c2=ta.ema(haclose, len2)
+h2=ta.ema(hahigh, len2)
+l2=ta.ema(halow, len2)
+
+col=o2>c2 ? color.red : color.lime
+plotcandle(o2, h2, l2, c2, title="Smoothed HA", color=col)
+
+// First Supertrend with ATR period 10 and factor 3
+atrPeriod1 = input.int(10,    title = "ATR Length 1", minval = 1)
+factor1 =    input.float(3.0, title = "Factor 1",     minval = 0.01, step = 0.01)
+[supertrend1, direction1] = ta.supertrend(factor1, atrPeriod1)
+
+supertrend1 := barstate.isfirst ? na : supertrend1
+upTrend1 =    plot(direction1 < 0 ? supertrend1 : na, "Up Trend 1",   color = color.green, style = plot.style_linebr)
+downTrend1 =  plot(direction1 < 0 ? na : supertrend1, "Down Trend 1", color = color.red,   style = plot.style_linebr)
+bodyMiddle1 = plot(barstate.isfirst ? na : (open + close) / 2, "Body Middle 1",display = display.none)
+
+fill(bodyMiddle1, upTrend1,   color.new(color.green, 90), fillgaps = false)
+fill(bodyMiddle1, downTrend1, color.new(color.red,   90), fillgaps = false)
+
+alertcondition(direction1[1] > direction1, title='Downtrend to Uptrend 1', message='The Supertrend value switched from Downtrend to Uptrend ')
+alertcondition(direction1[1] < direction1, title='Uptrend to Downtrend 1', message='The Supertrend value switched from Uptrend to Downtrend')
+alertcondition(direction1[1] != direction1, title='Trend Change 1', message='The Supertrend value switched from Uptrend to Downtrend or vice versa')
+
+// Second Supertrend with ATR period 11 and factor 2
+atrPeriod2 = input.int(11,    title = "ATR Length 2", minval = 1)
+factor2 =    input.float(2.0, title = "Factor 2",     minval = 0.01, step = 0.01)
+[supertrend2, direction2] = ta.supertrend(factor2, atrPeriod2)
+
+supertrend2 := barstate.isfirst ? na : supertrend2
+upTrend2 =    plot(direction2 < 0 ? supertrend2 : na, "Up Trend 2",   color = color.blue, style = plot.style_linebr)
+downTrend2 =  plot(direction2 < 0 ? na : supertrend2, "Down Trend 2", color = color.orange,   style = plot.style_linebr)
+bodyMiddle2 = plot(barstate.isfirst ? na : (open + close) / 2, "Body Middle 2",display = display.none)
+
+fill(bodyMiddle2, upTrend2,   color.new(color.blue, 90), fillgaps = false)
+fill(bodyMiddle2, downTrend2, color.new(color.orange,   90), fillgaps = false)
+
+alertcondition(direction2[1] > direction2, title='Downtrend to Uptrend 2', message='The Supertrend value switched from Downtrend to Uptrend ')
+alertcondition(direction2[1] < direction2, title='Uptrend to Downtrend 2', message='The Supertrend value switched from Uptrend to Downtrend')
+alertcondition(direction2[1] != direction2, title='Trend Change 2', message='The Supertrend value switched from Uptrend to Downtrend or vice versa')
+
+// Third Supertrend with ATR period 12 and factor 1
+atrPeriod3 = input.int(12,    title = "ATR Length 3", minval = 1)
+factor3 =    input.float(1.0, title = "Factor 3",     minval = 0.01, step = 0.01)
+[supertrend3, direction3] = ta.supertrend(factor3, atrPeriod3)
+
+supertrend3 := barstate.isfirst ? na : supertrend3
+upTrend3 =    plot(direction3 < 0 ? supertrend3 : na, "Up Trend 3",   color = color.purple, style = plot.style_linebr)
+downTrend3 =  plot(direction3 < 0 ? na : supertrend3, "Down Trend 3", color = color.yellow,   style = plot.style_linebr)
+bodyMiddle3 = plot(barstate.isfirst ? na : (open + close) / 2, "Body Middle 3",display = display.none)
+
+fill(bodyMiddle3, upTrend3,   color.new(color.purple, 90), fillgaps = false)
+fill(bodyMiddle3, downTrend3, color.new(color.yellow,   90), fillgaps = false)
+
+alertcondition(direction3[1] > direction3, title='Downtrend to Uptrend 3', message='The Supertrend value switched from Downtrend to Uptrend ')
+alertcondition(direction3[1] < direction3, title='Uptrend to Downtrend 3', message='The Supertrend value switched from Uptrend to Downtrend')
+alertcondition(direction3[1] != direction3, title='Trend Change 3', message='The Supertrend value switched from Uptrend to Downtrend or vice versa')
+
+// Long positie input
+longCondition = col == color.lime
+if (longCondition)
+    label.new(bar_index, low, text="Long", style=label.style_label_up, color=color.green, size=size.small, textcolor=color.white)
